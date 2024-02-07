@@ -1,0 +1,15 @@
+version: "3.5"
+
+services:
+  php:
+    image: diovanegabriel/php8.2-cli:latest
+    container_name: awss3-php-test
+    command: php -S 0.0.0.0:8080 -t /var/www/html
+    volumes:
+      - ./:/var/www/html
+    networks:
+      - custom_network
+
+networks:
+  custom_network:
+    external: true

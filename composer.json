@@ -1,0 +1,29 @@
+{
+    "name": "diovanegabriel/aws",
+    "description": "Integração com a AWS",
+    "type": "library",
+    "keywords": [
+        "AWS",
+        "S3"
+    ],
+    "license": "MIT",
+    "version": "v1.0.0",
+    "authors": [
+        {
+            "name": "Diovane Barbieri Gabriel"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DBarbieri\\Aws\\": "src/",
+            "DBarbieri\\Aws\\Libraries\\": "src/libraries/"
+        }
+    },
+    "require": {
+        "aws/aws-sdk-php": "^3.295",
+        "diovanegabriel/graylog": "^1.1"
+    },
+    "require-dev": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
