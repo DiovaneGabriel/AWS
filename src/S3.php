@@ -8,24 +8,17 @@ use DBarbieri\Aws\Libraries\Url;
 use DBarbieri\Graylog\Graylog;
 use Error;
 use Exception;
-use ReflectionMethod;
 
-class S3
+class S3 extends AWS
 {
     private S3Client $s3;
-    private ?Graylog $graylog = null;
 
     private ?string $bucket;
-    private string $key;
-    private string $region;
-    private string $secret;
 
     public function __construct(string $key, string $secret, string $region, string $bucket = null)
     {
+        parent::__construct($key, $secret, $region);
         $this->bucket = $bucket;
-        $this->key = $key;
-        $this->region = $region;
-        $this->secret = $secret;
 
         $this->setS3ClienteInstance();
     }
@@ -34,10 +27,10 @@ class S3
     {
         $this->s3 = new S3Client([
             'version' => 'latest',
-            'region'  => $this->region,
+            'region'  => $this->getRegion(),
             'credentials' => [
-                'key'    => $this->key,
-                'secret' => $this->secret,
+                'key'    => $this->getKey(),
+                'secret' => $this->getSecret(),
             ]
         ]);
     }
@@ -147,8 +140,8 @@ class S3
         $url = Url::decodeAwsS3Url($url);
         $region = $url->getRegion();
 
-        if ($region && $region != $this->region) {
-            $this->region = $region;
+        if ($region && $region != $this->getRegion()) {
+            $this->setRegion($region);
             $this->setS3ClienteInstance();
         }
 
@@ -160,8 +153,8 @@ class S3
         $url = Url::decodeAwsS3Url($url);
         $region = $url->getRegion();
 
-        if ($region && $region != $this->region) {
-            $this->region = $region;
+        if ($region && $region != $this->getRegion()) {
+            $this->setRegion($region);
             $this->setS3ClienteInstance();
         }
 
@@ -182,67 +175,6 @@ class S3
     //         throw new Exception("Deu ruim");
     //     }
     // }
-
-    private function log(string $response, string $level = Graylog::LEVEL_INFO)
-    {
-        if (!$this->graylog) {
-            return true;
-        }
-
-        $trace = debug_backtrace();
-        $step = $trace[1];
-
-        $function = $step['function'];
-        $args = $step['args'];
-
-        $reflectionMethod = new ReflectionMethod($this, $function);
-        $reflectionParameters = $reflectionMethod->getParameters();
-        $annotations = $reflectionMethod->getDocComment();
-
-        foreach ($reflectionParameters as $i => $param) {
-            if (isset($args[$i])) {
-                $value = $args[$i];
-                if (strpos($annotations, 'NoLog ' . $param->getName()) !== false) {
-                    $value = "This parameter isn't loggable!";
-                }
-                $params[$param->getName()] = $value;
-            }
-        }
-
-        $request = [$function => $params];
-
-        $class = "AWSS3";
-        $message = $level . " " . $class . " " . $function;
-
-        $logContent = [
-            "class" => $class,
-            "message" => $message,
-            "method" => $function,
-            "level" => $level,
-            "request" => $request,
-            "response" => $response
-        ];
-
-        return $this->getGraylog()->send($logContent);
-    }
-
-    /**
-     * Get the value of graylog
-     */
-    public function getGraylog(): Graylog
-    {
-        return $this->graylog;
-    }
-
-    /**
-     * Set the value of graylog
-     */
-    public function setGraylog(Graylog $graylog): self
-    {
-        $this->graylog = $graylog;
-
-        return $this;
-    }
 
     /**
      * Get the value of bucket

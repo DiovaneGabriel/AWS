@@ -21,3 +21,6 @@ autoload:
 	clear && \
 	sudo rm -rf vendor/ && \
 	docker exec -it ${CONTAINER_PHP} sh -c "cd /var/www/html && composer dump-autoload --dev"
+
+composer-update:
+	docker exec -it ${CONTAINER_PHP} sh -c "cd /var/www/html && composer update"

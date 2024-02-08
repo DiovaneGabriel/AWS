@@ -4,10 +4,11 @@
     "type": "library",
     "keywords": [
         "AWS",
-        "S3"
+        "S3",
+        "SQS"
     ],
     "license": "MIT",
-    "version": "v1.0.0",
+    "version": "v1.1.0",
     "authors": [
         {
             "name": "Diovane Barbieri Gabriel"
