@@ -48,7 +48,14 @@ class AWS
 
         $request = [$function => $params];
 
-        $class = "AWSS3";
+        $class = "";
+
+        if ($this instanceof S3) {
+            $class = "AWSS3";
+        } elseif ($this instanceof SQS) {
+            $class = "AWSSQS";
+        }
+
         $message = $level . " " . $class . " " . $function;
 
         $logContent = [
