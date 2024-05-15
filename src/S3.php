@@ -89,6 +89,29 @@ class S3 extends AWS
         }
     }
 
+    public function getSignedUri($target, $expires = '+15 minutes', $bucket = null): string
+    {
+        try {
+
+            $command = $this->s3->getCommand('GetObject', [
+                'Bucket' => $bucket ?: $this->getBucket(),
+                'Key' => $target,
+            ]);
+
+            $result = $this->s3->createPresignedRequest($command, $expires);
+
+            return (string) $result->getUri();
+        } catch (S3Exception $e) {
+            $xmlResponse = $e->getResponse()->getBody()->__toString();
+            $this->log($xmlResponse, Graylog::LEVEL_ERROR);
+
+            throw $e;
+        } catch (Error | Exception $e) {
+            $this->log($e->getMessage(), Graylog::LEVEL_FATAL);
+            throw $e;
+        }
+    }
+
     public function doesObjectExists($target, $bucket = null)
     {
         try {
