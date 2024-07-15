@@ -9,6 +9,7 @@ class Url
     private ?string $bucket;
     private ?string $region;
     private ?string $target;
+    private ?array $parameters;
 
     public static function decodeAwsS3Url(string $url)
     {
@@ -18,7 +19,17 @@ class Url
         $domain = $explodedUrl[2];
         $bucket = explode('.', $domain)[0];
         $region = explode('.', $domain)[2];
-        $target = explode($domain . '/', $url)[1];
+        $target = explode("?", explode($domain . '/', $url)[1])[0];
+        $parameters = explode($target . '?', $url)[1];
+
+        if ($parameters) {
+            $aux  = explode("&", $parameters);
+            $parameters = [];
+            foreach ($aux as $param) {
+                $param = explode("=", $param);
+                $parameters[$param[0]] = $param[1];
+            }
+        }
 
         $url = new self();
         $url
@@ -26,7 +37,8 @@ class Url
             ->setDomain($domain)
             ->setBucket($bucket)
             ->setRegion($region)
-            ->setTarget($target);
+            ->setTarget($target)
+            ->setParameters($parameters);
 
         return $url;
     }
@@ -117,6 +129,24 @@ class Url
     public function setTarget(?string $target): self
     {
         $this->target = $target;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of parameters
+     */
+    public function getParameters(): ?array
+    {
+        return $this->parameters;
+    }
+
+    /**
+     * Set the value of parameters
+     */
+    public function setParameters(?array $parameters): self
+    {
+        $this->parameters = $parameters;
 
         return $this;
     }

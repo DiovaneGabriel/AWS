@@ -112,6 +112,16 @@ class S3 extends AWS
         }
     }
 
+    public function refreshSignedUri($oldUrl): string
+    {
+        $urlDecoded = Url::decodeAwsS3Url($oldUrl);
+
+        $this->setBucket($urlDecoded->getBucket());
+        $this->setRegion($urlDecoded->getRegion());
+
+        return $this->getSignedUri($urlDecoded->getTarget());
+    }
+
     public function doesObjectExists($target, $bucket = null)
     {
         try {
