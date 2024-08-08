@@ -194,20 +194,26 @@ class S3 extends AWS
         return $this->get($url->getTarget(), $url->getBucket());
     }
 
-    // public function list($bucket)
-    // {
-    //     try {
-    //         $objects = $this->s3->listObjects([
-    //             'Bucket' => $bucket,
-    //         ]);
+    public function list($bucket = null)
+    {
+        try {
+            $result = $this->s3->listObjects([
+                'Bucket' => $bucket ?: $this->getBucket(),
+            ]);
 
-    //         echo '<pre>';
-    //         var_dump($objects['Contents']);
-    //         die();
-    //     } catch (\Throwable $th) {
-    //         throw new Exception("Deu ruim");
-    //     }
-    // }
+            $this->log(json_encode($result->get('@metadata')['headers']));
+
+            return $result['Contents'];
+        } catch (S3Exception $e) {
+            $xmlResponse = $e->getResponse()->getBody()->__toString();
+            $this->log($xmlResponse, Graylog::LEVEL_ERROR);
+
+            throw $e;
+        } catch (Error | Exception $e) {
+            $this->log($e->getMessage(), Graylog::LEVEL_FATAL);
+            throw $e;
+        }
+    }
 
     /**
      * Get the value of bucket
