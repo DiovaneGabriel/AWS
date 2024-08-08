@@ -12,11 +12,13 @@ class SES extends AWS
 {
     private SesClient $ses;
     private string $fromAddress;
+    private ?string $fromUser;
 
-    public function __construct(string $key, string $secret, string $region, string $fromAddress)
+    public function __construct(string $key, string $secret, string $region, string $fromAddress, string $fromUser = null)
     {
         parent::__construct($key, $secret, $region);
         $this->fromAddress = $fromAddress;
+        $this->fromUser = $fromUser;
 
         $this->setSESClienteInstance();
     }
@@ -33,9 +35,14 @@ class SES extends AWS
         ]);
     }
 
-    public function send($toAddresses, string $subject, string $body, bool $isHtml = true, $fromAddress = null)
+    public function send($toAddresses, string $subject, string $body, $replyToAddresses = null, bool $isHtml = true, $fromAddress = null, string $fromUser = null)
     {
         $toAddresses = is_array($toAddresses) ? $toAddresses : [$toAddresses];
+        $fromUser = $fromUser ?: $this->getFromUser();
+
+        if ($replyToAddresses) {
+            $replyToAddresses = is_array($replyToAddresses) ? $replyToAddresses : [$replyToAddresses];
+        }
 
         if ($isHtml) {
             $body = [
@@ -54,7 +61,8 @@ class SES extends AWS
         }
 
         try {
-            $result = $this->ses->sendEmail([
+
+            $mail = [
                 'Destination' => [
                     'ToAddresses' => $toAddresses,
                 ],
@@ -65,8 +73,16 @@ class SES extends AWS
                         'Data'    => $subject,
                     ],
                 ],
-                'Source' => $fromAddress ?: $this->getFromAddress(),
-            ]);
+            ];
+
+            if ($fromUser) {
+                $mail['Source'] = $fromUser . " <" . ($fromAddress ?: $this->getFromAddress()) . ">";
+            } else {
+                $mail['Source'] = $fromAddress ?: $this->getFromAddress();
+            }
+            $mail['ReplyToAddresses'] = $replyToAddresses;
+
+            $result = $this->ses->sendEmail($mail);
 
             $this->log(json_encode($result));
 
@@ -97,6 +113,24 @@ class SES extends AWS
     public function setFromAddress(string $fromAddress): self
     {
         $this->fromAddress = $fromAddress;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of fromUser
+     */
+    public function getFromUser(): string
+    {
+        return $this->fromUser;
+    }
+
+    /**
+     * Set the value of fromUser
+     */
+    public function setFromUser(string $fromUser): self
+    {
+        $this->fromUser = $fromUser;
 
         return $this;
     }
