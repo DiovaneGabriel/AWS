@@ -80,7 +80,7 @@ class SES extends AWS
             } else {
                 $mail['Source'] = $fromAddress ?: $this->getFromAddress();
             }
-            $mail['ReplyToAddresses'] = $replyToAddresses;
+            $replyToAddresses ? $mail['ReplyToAddresses'] = $replyToAddresses : null;
 
             $result = $this->ses->sendEmail($mail);
 
