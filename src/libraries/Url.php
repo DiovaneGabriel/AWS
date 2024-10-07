@@ -20,7 +20,9 @@ class Url
         $bucket = explode('.', $domain)[0];
         $region = explode('.', $domain)[2];
         $target = explode("?", explode($domain . '/', $url)[1])[0];
-        $parameters = explode($target . '?', $url)[1];
+
+        $params = explode($target . '?', $url);
+        $parameters = count($params) > 1 ? $params[1] : null;
 
         if ($parameters) {
             $aux  = explode("&", $parameters);
