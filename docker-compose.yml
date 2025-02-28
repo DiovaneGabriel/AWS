@@ -1,5 +1,3 @@
-version: "3.5"
-
 services:
   php:
     image: diovanegabriel/php8.2-cli:latest
@@ -12,4 +10,3 @@ services:
 
 networks:
   custom_network:
-    external: true

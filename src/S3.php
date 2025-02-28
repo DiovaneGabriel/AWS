@@ -194,16 +194,36 @@ class S3 extends AWS
         return $this->get($url->getTarget(), $url->getBucket());
     }
 
-    public function list($bucket = null)
+    public function list($bucket = null, $returnFullData = true)
     {
         try {
-            $result = $this->s3->listObjects([
-                'Bucket' => $bucket ?: $this->getBucket(),
-            ]);
+            // $result = $this->s3->listObjects([
+            //     'Bucket' => $bucket ?: $this->getBucket(),
+            // ]);
 
-            $this->log(json_encode($result->get('@metadata')['headers']));
+            $continuationToken = null;
+            $allFiles = [];
+            $params = ['Bucket' => $bucket ?: $this->getBucket()];
 
-            return $result['Contents'];
+            do {
+
+                if ($continuationToken) {
+                    $params['ContinuationToken'] = $continuationToken;
+                }
+
+                $result = $this->s3->listObjectsV2($params);
+                $this->log(json_encode($result->get('@metadata')['headers']));
+
+                if (isset($result['Contents'])) {
+                    foreach ($result['Contents'] as $file) {
+                        $allFiles[] = $returnFullData ? $file : $file["Key"];
+                    }
+                }
+
+                $continuationToken = $result['NextContinuationToken'] ?? null;
+            } while ($continuationToken);
+
+            return $allFiles;
         } catch (S3Exception $e) {
             $xmlResponse = $e->getResponse()->getBody()->__toString();
             $this->log($xmlResponse, Graylog::LEVEL_ERROR);
