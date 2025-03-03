@@ -67,7 +67,7 @@ class S3 extends AWS
         }
     }
 
-    public function get($target, $bucket = null)
+    public function get($target, $bucket = null, $returnObject = false)
     {
         try {
             $result = $this->s3->getObject([
@@ -77,7 +77,7 @@ class S3 extends AWS
 
             $this->log(json_encode($result->get('@metadata')['headers']));
 
-            return $result['Body']->getContents();
+            return $returnObject ? $result : $result['Body']->getContents();
         } catch (S3Exception $e) {
             $xmlResponse = $e->getResponse()->getBody()->__toString();
             $this->log($xmlResponse, Graylog::LEVEL_ERROR);
