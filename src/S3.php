@@ -39,7 +39,7 @@ class S3 extends AWS
      * @NoLog fileContent
      */
 
-    public function send($fileContent, $target, $override = false, $bucket = null)
+    public function send($fileContent, $target, $override = false, $bucket = null, array $metadata = [])
     {
 
         if (!$override && $this->doesObjectExists($target, $bucket)) {
@@ -50,7 +50,8 @@ class S3 extends AWS
             $result = $this->s3->putObject([
                 'Bucket' => $bucket ?: $this->getBucket(),
                 'Key'    => $target,
-                'Body'   => $fileContent
+                'Body'   => $fileContent,
+                'Metadata' => $metadata
             ]);
 
             $this->log(json_encode($result->get('@metadata')['headers']));
