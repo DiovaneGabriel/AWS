@@ -109,13 +109,17 @@ class SES extends AWS
         }
     }
 
-    public function send($toAddresses, string $subject, string $body, $replyToAddresses = null, bool $isHtml = true, $fromAddress = null, string $fromUser = null)
+    public function send($toAddresses, string $subject, string $body, $replyToAddresses = null, bool $isHtml = true, $fromAddress = null, $fromUser = null, $ccAddresses = null)
     {
         $toAddresses = is_array($toAddresses) ? $toAddresses : [$toAddresses];
         $fromUser = $fromUser ?: $this->getFromUser();
 
         if ($replyToAddresses) {
             $replyToAddresses = is_array($replyToAddresses) ? $replyToAddresses : [$replyToAddresses];
+        }
+
+        if ($ccAddresses) {
+            $ccAddresses = is_array($ccAddresses) ? $ccAddresses : [$ccAddresses];
         }
 
         if ($isHtml) {
@@ -148,6 +152,10 @@ class SES extends AWS
                     ],
                 ],
             ];
+
+            if ($ccAddresses) {
+                $mail['Destination']['CcAddresses'] = $ccAddresses;
+            }
 
             if ($fromUser) {
                 $mail['Source'] = $fromUser . " <" . ($fromAddress ?: $this->getFromAddress()) . ">";
